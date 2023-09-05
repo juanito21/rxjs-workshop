@@ -1,0 +1,14 @@
+<div class="button-row">
+  <button mat-raised-button color="primary" (click)="onBlueClick($event)">Blue</button>
+  <button mat-raised-button color="warn" (click)="onRedClick($event)">Red</button>
+  <button mat-raised-button color="default" (click)="clear()">Clear</button>
+</div>
+
+<div class="event-row">
+  <button mat-raised-button
+          *ngFor="let event of events$ | async"
+          [color]="event.color === 'blue' ? 'primary' : 'warn'">
+    emit at {{event.emitAt | date:'mm:ss'}} |
+    pushed at {{ event.pushedAt | date:'mm:ss'}}
+  </button>
+</div>
