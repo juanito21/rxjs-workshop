@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {concatMap, interval, map, merge, Subject, Subscription, take, tap} from "rxjs";
+import {forkJoin, interval, merge, Subject, Subscription, switchMap, take, tap} from "rxjs";
 
 @Component({
   selector: 'app-button-racer',
@@ -17,21 +17,28 @@ export class ButtonRacerComponent implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
 
   onRedClick(event: any) {
-    this.red$.next({color: 'red', emitAt: new Date().getTime(), event})
+    const redEvent: CustomButtonClickEvent = {color: 'red', emitAt: new Date().getTime(), event};
+    this.red$.next(redEvent)
   }
 
   onBlueClick(event: any) {
-    this.blue$.next({color: 'blue', emitAt: new Date().getTime(), event})
+    const blueEvent: CustomButtonClickEvent = {color: 'blue', emitAt: new Date().getTime(), event};
+    this.blue$.next(blueEvent);
   }
 
   ngOnInit(): void {
-    merge(this.red$, this.blue$).pipe(
-      concatMap(event => interval(1000).pipe(
-        take(3),
-        map(() => event),
-        tap(this.newEvent.bind(this))
-      ))
-    ).subscribe()
+    forkJoin(
+      this.red$.pipe(take(1)),
+      this.blue$.pipe(take(1))
+    ).pipe(
+      tap(events => events.forEach(e => this.newEvent(e)))
+    ).subscribe();
+    // merge(this.red$, this.blue$).pipe(
+    //   switchMap(event => interval(1000).pipe(
+    //     take(3),
+    //     tap(() => this.newEvent(event))
+    //   ))
+    // ).subscribe()
   }
 
   newEvent(event: CustomButtonClickEvent) {
